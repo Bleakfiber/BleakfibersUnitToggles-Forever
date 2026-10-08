@@ -55,8 +55,8 @@ local INSET_BACKDROP = {
     insets = { left = 3, right = 3, top = 3, bottom = 3 }
 }
 
--- Registry of UI widgets for live state updates
-local registeredWidgets = {}
+-- Dictionary of all active checkbox frames indexed by CVar
+UI.checkboxes = {}
 
 --[[-----------------------------------------------------------------------------
     Local Fallback Widget Factory (When Master Hub is not loaded)
@@ -113,16 +113,6 @@ function UI:CreateCheckbox(parent, name, labelText, x, y, getFunc, setFunc, tool
         cb:SetScript("OnLeave", function() GameTooltip:Hide() end)
     end
 
-    table.insert(registeredWidgets, {
-        type = "checkbox",
-        frame = cb,
-        update = function()
-            if cb.getFunc then
-                cb:SetChecked(cb.getFunc())
-            end
-        end,
-    })
-
     return cb
 end
 
@@ -159,6 +149,47 @@ function UI:CreateButton(parent, name, text, x, y, width, height, onClick)
 end
 
 --[[-----------------------------------------------------------------------------
+    Live Refresh & Checkbox Synchronization
+-------------------------------------------------------------------------------]]
+function UI:Refresh(customStatusMsg)
+    local activeCount = 0
+    local totalCount = (Config.CVAR_DEFINITIONS and #Config.CVAR_DEFINITIONS) or 19
+
+    if Config.CVAR_DEFINITIONS then
+        for _, def in ipairs(Config.CVAR_DEFINITIONS) do
+            local cb = (self.checkboxes and self.checkboxes[def.cvar]) or _G["BUT_CB_" .. def.cvar]
+            local isChecked = Config:GetCVar(def.cvar) and true or false
+            if cb and cb.SetChecked then
+                cb:SetChecked(isChecked)
+            end
+            if isChecked then
+                activeCount = activeCount + 1
+            end
+        end
+    end
+
+    -- Update active status readout
+    if self.statusText then
+        if customStatusMsg then
+            self.statusText:SetText(customStatusMsg)
+        else
+            local statusColor = "|cffffd100"
+            if activeCount == totalCount then
+                statusColor = "|cff22ff22"
+            elseif activeCount == 0 then
+                statusColor = "|cffff2222"
+            end
+            self.statusText:SetText(string.format("%sActive: %d / %d toggles enabled|r", statusColor, activeCount, totalCount))
+        end
+    end
+
+    -- Update profile title if in standalone mode
+    if self.profileLabel then
+        self.profileLabel:SetText("Profile: |cffffd100" .. Config:GetActiveProfile() .. "|r")
+    end
+end
+
+--[[-----------------------------------------------------------------------------
     Options Panel Layout (Context-Aware)
 -------------------------------------------------------------------------------]]
 function UI:BuildOptions(parentContainer, isMasterHub)
@@ -167,8 +198,8 @@ function UI:BuildOptions(parentContainer, isMasterHub)
     -- Use Master Hub widget toolkit if available, else local factory
     local Kit = (BleakfibersAddonConfigForever and BleakfibersAddonConfigForever.UI) or self
 
-    -- Clear previously registered widgets for rebuilds
-    wipe(registeredWidgets)
+    -- Reset checkbox registry
+    self.checkboxes = {}
 
     local startY = -12
 
@@ -187,40 +218,55 @@ function UI:BuildOptions(parentContainer, isMasterHub)
         startY = -46
     end
 
-    -- Quick Action Preset Buttons
-    local btnWidth = 84
+    --[[
+        Quick Action Preset Buttons:
+        [Enable All] [Disable All] [PvP Preset] [Blizzard Def] [Sync Live]
+    ]]
+    local btnWidth = 78
     local btnHeight = 22
     local btnSpacing = 6
     local curX = 16
 
     Kit:CreateButton(parentContainer, "BUT_BtnAllOn", "Enable All", curX, startY, btnWidth, btnHeight, function()
         Config:SetAll(true)
+        UI:Refresh("|cff22ff22Preset: All Enabled (19/19)|r")
     end)
     curX = curX + btnWidth + btnSpacing
 
     Kit:CreateButton(parentContainer, "BUT_BtnAllOff", "Disable All", curX, startY, btnWidth, btnHeight, function()
         Config:SetAll(false)
+        UI:Refresh("|cffff2222Preset: All Disabled (0/19)|r")
     end)
     curX = curX + btnWidth + btnSpacing
 
     Kit:CreateButton(parentContainer, "BUT_BtnPvP", "PvP Preset", curX, startY, btnWidth, btnHeight, function()
         Config:ApplyPvPPreset()
+        UI:Refresh("|cffffd100Preset: PvP Configuration Applied|r")
     end)
     curX = curX + btnWidth + btnSpacing
 
-    Kit:CreateButton(parentContainer, "BUT_BtnDefaults", "Blizzard Def", curX, startY, 92, btnHeight, function()
+    Kit:CreateButton(parentContainer, "BUT_BtnDefaults", "Blizzard Def", curX, startY, 86, btnHeight, function()
         Config:ApplyBlizzardDefaults()
+        UI:Refresh("|cff3399ffPreset: Blizzard Defaults Restored|r")
     end)
-    curX = curX + 92 + btnSpacing
+    curX = curX + 86 + btnSpacing
 
-    Kit:CreateButton(parentContainer, "BUT_BtnSync", "Sync Live", curX, startY, 80, btnHeight, function()
+    Kit:CreateButton(parentContainer, "BUT_BtnSync", "Sync Live", curX, startY, 74, btnHeight, function()
         if BUT.Core and BUT.Core.SyncFromEngine then
             BUT.Core:SyncFromEngine()
         end
+        UI:Refresh("|cffffd100Synchronized with live game engine|r")
     end)
 
-    -- Divider below presets
-    startY = startY - 30
+    -- Status readout line below presets
+    startY = startY - 26
+    local statusText = parentContainer:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    statusText:SetPoint("TOPLEFT", parentContainer, "TOPLEFT", 16, startY)
+    statusText:SetText("Active: 0 / 19 toggles enabled")
+    self.statusText = statusText
+
+    -- Divider below presets & status
+    startY = startY - 14
     Kit:CreateDivider(parentContainer, startY)
     startY = startY - 14
 
@@ -252,16 +298,20 @@ function UI:BuildOptions(parentContainer, isMasterHub)
     for _, cvar in ipairs(friendlyCVars) do
         local def = Config.CVAR_LOOKUP[cvar]
         if def then
-            Kit:CreateCheckbox(
+            local cb = Kit:CreateCheckbox(
                 parentContainer,
                 "BUT_CB_" .. cvar,
                 def.label,
                 col1X,
                 y1,
                 function() return Config:GetCVar(cvar) end,
-                function(val) Config:SetCVar(cvar, val) end,
+                function(val)
+                    Config:SetCVar(cvar, val and true or false)
+                    UI:Refresh()
+                end,
                 def.tooltip
             )
+            self.checkboxes[cvar] = cb
             y1 = y1 - stepY
         end
     end
@@ -279,16 +329,20 @@ function UI:BuildOptions(parentContainer, isMasterHub)
     for _, cvar in ipairs(npcCVars) do
         local def = Config.CVAR_LOOKUP[cvar]
         if def then
-            Kit:CreateCheckbox(
+            local cb = Kit:CreateCheckbox(
                 parentContainer,
                 "BUT_CB_" .. cvar,
                 def.label,
                 col1X,
                 y1,
                 function() return Config:GetCVar(cvar) end,
-                function(val) Config:SetCVar(cvar, val) end,
+                function(val)
+                    Config:SetCVar(cvar, val and true or false)
+                    UI:Refresh()
+                end,
                 def.tooltip
             )
+            self.checkboxes[cvar] = cb
             y1 = y1 - stepY
         end
     end
@@ -311,16 +365,20 @@ function UI:BuildOptions(parentContainer, isMasterHub)
     for _, cvar in ipairs(enemyCVars) do
         local def = Config.CVAR_LOOKUP[cvar]
         if def then
-            Kit:CreateCheckbox(
+            local cb = Kit:CreateCheckbox(
                 parentContainer,
                 "BUT_CB_" .. cvar,
                 def.label,
                 col2X,
                 y2,
                 function() return Config:GetCVar(cvar) end,
-                function(val) Config:SetCVar(cvar, val) end,
+                function(val)
+                    Config:SetCVar(cvar, val and true or false)
+                    UI:Refresh()
+                end,
                 def.tooltip
             )
+            self.checkboxes[cvar] = cb
             y2 = y2 - stepY
         end
     end
@@ -340,30 +398,26 @@ function UI:BuildOptions(parentContainer, isMasterHub)
     for _, cvar in ipairs(playerCVars) do
         local def = Config.CVAR_LOOKUP[cvar]
         if def then
-            Kit:CreateCheckbox(
+            local cb = Kit:CreateCheckbox(
                 parentContainer,
                 "BUT_CB_" .. cvar,
                 def.label,
                 col2X,
                 y2,
                 function() return Config:GetCVar(cvar) end,
-                function(val) Config:SetCVar(cvar, val) end,
+                function(val)
+                    Config:SetCVar(cvar, val and true or false)
+                    UI:Refresh()
+                end,
                 def.tooltip
             )
+            self.checkboxes[cvar] = cb
             y2 = y2 - stepY
         end
     end
-end
 
-function UI:Refresh()
-    for _, item in ipairs(registeredWidgets) do
-        if item.update then
-            item.update()
-        end
-    end
-    if self.profileLabel then
-        self.profileLabel:SetText("Profile: |cffffd100" .. Config:GetActiveProfile() .. "|r")
-    end
+    -- Initial sync of checkboxes with active profile
+    self:Refresh()
 end
 
 --[[-----------------------------------------------------------------------------
@@ -373,7 +427,7 @@ function UI:CreateStandaloneWindow()
     if self.standaloneFrame then return self.standaloneFrame end
 
     local f = CreateFrame("Frame", "BleakfibersUnitTogglesStandaloneWindow", UIParent, BACKDROP_TEMPLATE)
-    f:SetSize(620, 480)
+    f:SetSize(620, 500)
     f:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
     f:SetFrameStrata("HIGH")
     f:SetToplevel(true)
@@ -428,4 +482,3 @@ function UI:ToggleStandaloneWindow()
         win:Show()
     end
 end
-
