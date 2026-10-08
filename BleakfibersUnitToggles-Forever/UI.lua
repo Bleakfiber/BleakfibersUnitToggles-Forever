@@ -153,7 +153,7 @@ end
 -------------------------------------------------------------------------------]]
 function UI:Refresh(customStatusMsg)
     local activeCount = 0
-    local totalCount = (Config.CVAR_DEFINITIONS and #Config.CVAR_DEFINITIONS) or 19
+    local totalCount = (Config.CVAR_DEFINITIONS and #Config.CVAR_DEFINITIONS) or 20
 
     if Config.CVAR_DEFINITIONS then
         for _, def in ipairs(Config.CVAR_DEFINITIONS) do
@@ -229,25 +229,25 @@ function UI:BuildOptions(parentContainer, isMasterHub)
 
     Kit:CreateButton(parentContainer, "BUT_BtnAllOn", "Enable All", curX, startY, btnWidth, btnHeight, function()
         Config:SetAll(true)
-        UI:Refresh("|cff22ff22Preset: All Enabled (19/19)|r")
+        UI:Refresh("|cff22ff22Preset: All Enabled (20/20)|r")
     end)
     curX = curX + btnWidth + btnSpacing
 
     Kit:CreateButton(parentContainer, "BUT_BtnAllOff", "Disable All", curX, startY, btnWidth, btnHeight, function()
         Config:SetAll(false)
-        UI:Refresh("|cffff2222Preset: All Disabled (0/19)|r")
+        UI:Refresh("|cffff2222Preset: All Disabled (0/20)|r")
     end)
     curX = curX + btnWidth + btnSpacing
 
     Kit:CreateButton(parentContainer, "BUT_BtnPvP", "PvP Preset", curX, startY, btnWidth, btnHeight, function()
         Config:ApplyPvPPreset()
-        UI:Refresh("|cffffd100Preset: PvP Configuration Applied|r")
+        UI:Refresh("|cffffd100Preset: PvP Configuration Applied (8/20)|r")
     end)
     curX = curX + btnWidth + btnSpacing
 
     Kit:CreateButton(parentContainer, "BUT_BtnDefaults", "Blizzard Def", curX, startY, 86, btnHeight, function()
         Config:ApplyBlizzardDefaults()
-        UI:Refresh("|cff3399ffPreset: Blizzard Defaults Restored|r")
+        UI:Refresh("|cff3399ffPreset: Blizzard Defaults Restored (16/20)|r")
     end)
     curX = curX + 86 + btnSpacing
 
@@ -262,7 +262,7 @@ function UI:BuildOptions(parentContainer, isMasterHub)
     startY = startY - 26
     local statusText = parentContainer:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     statusText:SetPoint("TOPLEFT", parentContainer, "TOPLEFT", 16, startY)
-    statusText:SetText("Active: 0 / 19 toggles enabled")
+    statusText:SetText("Active: 0 / 20 toggles enabled")
     self.statusText = statusText
 
     -- Divider below presets & status
@@ -272,15 +272,15 @@ function UI:BuildOptions(parentContainer, isMasterHub)
 
     --[[
         2-Column Canvas Grid Standards:
-        Column 1 (Left):  x = 16,  width = 240px
-        Column 2 (Right): x = 280, width = 240px
+        Column 1 (Left):  x = 16,  width = 240px (10 checkboxes)
+        Column 2 (Right): x = 280, width = 240px (10 checkboxes)
     ]]
     local col1X = 16
     local col2X = 280
     local stepY = 26
 
     -------------------------------------------------------------------------
-    -- COLUMN 1: Friendly Units & NPCs
+    -- COLUMN 1: Friendly Units & NPCs (10 Checkboxes)
     -------------------------------------------------------------------------
     local y1 = startY
     Kit:CreateSectionHeader(parentContainer, "Friendly Units", col1X, y1)
@@ -317,10 +317,11 @@ function UI:BuildOptions(parentContainer, isMasterHub)
     end
 
     y1 = y1 - 10
-    Kit:CreateSectionHeader(parentContainer, "NPCs & Creatures", col1X, y1)
+    Kit:CreateSectionHeader(parentContainer, "NPCs & World", col1X, y1)
     y1 = y1 - 22
 
     local npcCVars = {
+        "UnitNameOwn",
         "UnitNameNPC",
         "UnitNameInteractiveNPC",
         "UnitNameNonCombatCreatureName",
@@ -348,7 +349,7 @@ function UI:BuildOptions(parentContainer, isMasterHub)
     end
 
     -------------------------------------------------------------------------
-    -- COLUMN 2: Enemy Units & Player Details
+    -- COLUMN 2: Enemy Units & Titles (10 Checkboxes)
     -------------------------------------------------------------------------
     local y2 = startY
     Kit:CreateSectionHeader(parentContainer, "Enemy Units", col2X, y2)
@@ -358,6 +359,7 @@ function UI:BuildOptions(parentContainer, isMasterHub)
         "UnitNameEnemyPlayerName",
         "UnitNameEnemyPetName",
         "UnitNameEnemyMinionName",
+        "UnitNameEnemyGuardianName",
         "UnitNameEnemyTotemName",
         "UnitNameHostleNPC",
     }
@@ -384,18 +386,17 @@ function UI:BuildOptions(parentContainer, isMasterHub)
     end
 
     y2 = y2 - 10
-    Kit:CreateSectionHeader(parentContainer, "Player & Names Display", col2X, y2)
+    Kit:CreateSectionHeader(parentContainer, "Guild & Titles", col2X, y2)
     y2 = y2 - 22
 
-    local playerCVars = {
-        "UnitNameOwn",
+    local titleCVars = {
         "UnitNamePlayerGuild",
         "UnitNameGuildTitle",
-        "UnitNameFocused",
+        "UnitNamePlayerPVPTitle",
         "UnitNameForceHideMinus",
     }
 
-    for _, cvar in ipairs(playerCVars) do
+    for _, cvar in ipairs(titleCVars) do
         local def = Config.CVAR_LOOKUP[cvar]
         if def then
             local cb = Kit:CreateCheckbox(

@@ -16,7 +16,7 @@ BUT.Config = Config
 _G["BleakfibersUnitTogglesConfig"] = Config
 
 --[[-----------------------------------------------------------------------------
-    CVar Catalog Definitions (19 Managed CVars)
+    CVar Catalog Definitions (20 Managed CVars)
 -------------------------------------------------------------------------------]]
 Config.CVAR_DEFINITIONS = {
     -- Category 1: Friendly Units
@@ -31,28 +31,28 @@ Config.CVAR_DEFINITIONS = {
         cvar = "UnitNameFriendlyPetName",
         label = "Friendly Pets",
         category = "friendly",
-        default = false,
+        default = true,
         tooltip = "Show overhead names for friendly player pets.\n\nCVar: UnitNameFriendlyPetName (0|1)"
     },
     {
         cvar = "UnitNameFriendlyMinionName",
         label = "Friendly Minions",
         category = "friendly",
-        default = false,
+        default = true,
         tooltip = "Show overhead names for friendly player minions and summoned units.\n\nCVar: UnitNameFriendlyMinionName (0|1)"
     },
     {
         cvar = "UnitNameFriendlyGuardianName",
         label = "Friendly Guardians",
         category = "friendly",
-        default = false,
+        default = true,
         tooltip = "Show overhead names for friendly guardians.\n\nCVar: UnitNameFriendlyGuardianName (0|1)"
     },
     {
         cvar = "UnitNameFriendlyTotemName",
         label = "Friendly Totems",
         category = "friendly",
-        default = false,
+        default = true,
         tooltip = "Show overhead names for friendly totems.\n\nCVar: UnitNameFriendlyTotemName (0|1)"
     },
     {
@@ -63,7 +63,37 @@ Config.CVAR_DEFINITIONS = {
         tooltip = "Show overhead names for questgivers, vendors, flight masters, and special NPCs.\n\nCVar: UnitNameFriendlySpecialNPCName (0|1)"
     },
 
-    -- Category 2: Enemy Units
+    -- Category 2: NPCs & World
+    {
+        cvar = "UnitNameOwn",
+        label = "My Own Name",
+        category = "npc",
+        default = false,
+        tooltip = "Show your own character name above your head.\n\nCVar: UnitNameOwn (0|1)"
+    },
+    {
+        cvar = "UnitNameNPC",
+        label = "All NPCs",
+        category = "npc",
+        default = false,
+        tooltip = "Show overhead names for all NPCs regardless of reaction.\n\nCVar: UnitNameNPC (0|1)"
+    },
+    {
+        cvar = "UnitNameInteractiveNPC",
+        label = "Interactive NPCs",
+        category = "npc",
+        default = true,
+        tooltip = "Show overhead names for interactive NPCs (bankers, flight masters, innkeepers).\n\nCVar: UnitNameInteractiveNPC (0|1)"
+    },
+    {
+        cvar = "UnitNameNonCombatCreatureName",
+        label = "Critters & Companions",
+        category = "npc",
+        default = false,
+        tooltip = "Show overhead names for critters and non-combat pets.\n\nCVar: UnitNameNonCombatCreatureName (0|1)"
+    },
+
+    -- Category 3: Enemy Units
     {
         cvar = "UnitNameEnemyPlayerName",
         label = "Enemy Players",
@@ -86,6 +116,13 @@ Config.CVAR_DEFINITIONS = {
         tooltip = "Show overhead names for hostile/enemy player minions and summoned units.\n\nCVar: UnitNameEnemyMinionName (0|1)"
     },
     {
+        cvar = "UnitNameEnemyGuardianName",
+        label = "Enemy Guardians",
+        category = "enemy",
+        default = true,
+        tooltip = "Show overhead names for hostile/enemy guardians.\n\nCVar: UnitNameEnemyGuardianName (0|1)"
+    },
+    {
         cvar = "UnitNameEnemyTotemName",
         label = "Enemy Totems",
         category = "enemy",
@@ -100,37 +137,7 @@ Config.CVAR_DEFINITIONS = {
         tooltip = "Show overhead names for hostile NPCs and monsters.\n\nCVar: UnitNameHostleNPC (0|1)"
     },
 
-    -- Category 3: NPCs & Creatures
-    {
-        cvar = "UnitNameNPC",
-        label = "All NPCs",
-        category = "npc",
-        default = false,
-        tooltip = "Show overhead names for all NPCs regardless of reaction.\n\nCVar: UnitNameNPC (0|1)"
-    },
-    {
-        cvar = "UnitNameInteractiveNPC",
-        label = "Interactive NPCs",
-        category = "npc",
-        default = false,
-        tooltip = "Show overhead names for interactive NPCs (bankers, flight masters, innkeepers).\n\nCVar: UnitNameInteractiveNPC (0|1)"
-    },
-    {
-        cvar = "UnitNameNonCombatCreatureName",
-        label = "Critters & Companions",
-        category = "npc",
-        default = false,
-        tooltip = "Show overhead names for critters and non-combat pets.\n\nCVar: UnitNameNonCombatCreatureName (0|1)"
-    },
-
-    -- Category 4: Player & Name Formatting
-    {
-        cvar = "UnitNameOwn",
-        label = "My Own Name",
-        category = "player",
-        default = false,
-        tooltip = "Show your own character name above your head.\n\nCVar: UnitNameOwn (0|1)"
-    },
+    -- Category 4: Guild & Titles
     {
         cvar = "UnitNamePlayerGuild",
         label = "Player Guild Names",
@@ -146,11 +153,11 @@ Config.CVAR_DEFINITIONS = {
         tooltip = "Show guild ranks/titles on player characters.\n\nCVar: UnitNameGuildTitle (0|1)"
     },
     {
-        cvar = "UnitNameFocused",
-        label = "Focused / Selected Name",
+        cvar = "UnitNamePlayerPVPTitle",
+        label = "Player PvP Titles",
         category = "player",
-        default = false,
-        tooltip = "Show overhead name for your currently targeted or focused unit.\n\nCVar: UnitNameFocused (0|1)"
+        default = true,
+        tooltip = "Show PvP titles and ranks on player characters.\n\nCVar: UnitNamePlayerPVPTitle (0|1)"
     },
     {
         cvar = "UnitNameForceHideMinus",
@@ -362,6 +369,7 @@ function Config:ApplyPvPPreset()
         UnitNameEnemyPlayerName = true,
         UnitNameEnemyPetName = true,
         UnitNameEnemyMinionName = true,
+        UnitNameEnemyGuardianName = true,
         UnitNameEnemyTotemName = true,
         UnitNameHostleNPC = true,
         UnitNameNPC = false,
@@ -370,7 +378,7 @@ function Config:ApplyPvPPreset()
         UnitNameOwn = false,
         UnitNamePlayerGuild = false,
         UnitNameGuildTitle = false,
-        UnitNameFocused = true,
+        UnitNamePlayerPVPTitle = true,
         UnitNameForceHideMinus = true,
     }
     for cvar, val in pairs(pvpSettings) do
@@ -437,14 +445,14 @@ SlashCmdList["BLEAKFIBERSUNITTOGGLES"] = function(msg)
     elseif cmd == "all" or cmd == "enableall" then
         if arg == "0" or arg == "off" then
             Config:SetAll(false)
-            PrintChat("All 19 unit toggles set to |cffff2222OFF|r.")
+            PrintChat("All 20 unit toggles set to |cffff2222OFF|r.")
         else
             Config:SetAll(true)
-            PrintChat("All 19 unit toggles set to |cff22ff22ON|r.")
+            PrintChat("All 20 unit toggles set to |cff22ff22ON|r.")
         end
     elseif cmd == "disableall" then
         Config:SetAll(false)
-        PrintChat("All 19 unit toggles set to |cffff2222OFF|r.")
+        PrintChat("All 20 unit toggles set to |cffff2222OFF|r.")
     elseif cmd == "list" or cmd == "status" then
         PrintChat("Current Unit CVar Status (Profile: |cffffd100" .. Config:GetActiveProfile() .. "|r):")
         for _, def in ipairs(Config.CVAR_DEFINITIONS) do
