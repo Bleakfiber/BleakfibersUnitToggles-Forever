@@ -90,3 +90,4 @@ Part of **Bleakfiber's Addon Suite for World of Warcraft Forever**:
 - **Bleakfiber's Maps** — Minimap and World Map enhancements.
 - **Bleakfiber's Quest Tracker** — Modular quest tracking and Wayfinder 360° navigation HUD.
 - **Bleakfiber's Unit Toggles** — Instant CVar nameplate and title manager.
+

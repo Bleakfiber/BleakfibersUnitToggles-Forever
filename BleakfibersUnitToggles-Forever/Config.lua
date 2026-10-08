@@ -245,7 +245,8 @@ function Config:SetActiveProfile(name)
     if not name or name == "" then return end
     self:InitDB()
     if not BleakfibersUnitTogglesDB.profiles[name] then
-        BleakfibersUnitTogglesDB.profiles[name] = DeepCopy(DB_DEFAULTS)
+        local cur = BleakfibersUnitTogglesDB.profiles[BleakfibersUnitTogglesDB.activeProfile]
+        BleakfibersUnitTogglesDB.profiles[name] = DeepCopy(cur or DB_DEFAULTS)
     end
     BleakfibersUnitTogglesDB.activeProfile = name
 
@@ -260,11 +261,16 @@ function Config:SetActiveProfile(name)
     end
 end
 
-function Config:CreateProfile(name)
+function Config:CreateProfile(name, fromName)
     if not name or name == "" then return end
     self:InitDB()
+    -- Never overwrite existing profile!
     if not BleakfibersUnitTogglesDB.profiles[name] then
-        BleakfibersUnitTogglesDB.profiles[name] = DeepCopy(DB_DEFAULTS)
+        local source = fromName and BleakfibersUnitTogglesDB.profiles[fromName]
+        if not source then
+            source = BleakfibersUnitTogglesDB.profiles[BleakfibersUnitTogglesDB.activeProfile] or DB_DEFAULTS
+        end
+        BleakfibersUnitTogglesDB.profiles[name] = DeepCopy(source)
     end
     self:SetActiveProfile(name)
 end
@@ -515,7 +521,7 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
                     SetCurrent    = function(p) Config:SetActiveProfile(p) end,
                     SaveCurrentAs = function(p) Config:SaveCurrentAs(p) end,
                     List          = function() return Config:GetProfiles() end,
-                    Create        = function(p) Config:CreateProfile(p) end,
+                    Create        = function(p, from) Config:CreateProfile(p, from) end,
                     Delete        = function(p) Config:DeleteProfile(p) end,
                     Copy          = function(f, t) Config:CopyProfile(f, t) end,
                     Reset         = function(p) Config:ResetProfile(p) end,

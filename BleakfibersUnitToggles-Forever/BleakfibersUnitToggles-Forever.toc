@@ -2,7 +2,7 @@
 ## Title: |cff3399ffBleakfiber's|r |cffffffffUnit Toggles|r - |cffffd100Forever|r
 ## Notes: Standalone unit nameplate and title CVar manager for World of Warcraft Forever.
 ## Author: Bleakfiber
-## Version: 1.0.04
+## Version: 1.0.6
 ## SavedVariables: BleakfibersUnitTogglesDB
 ## OptionalDeps: BleakfibersAddonConfig-Forever
 
