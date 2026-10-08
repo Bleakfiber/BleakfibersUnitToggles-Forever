@@ -5,6 +5,7 @@
 ## Version: 1.0.6
 ## SavedVariables: BleakfibersUnitTogglesDB
 ## OptionalDeps: BleakfibersAddonConfig-Forever
+## X-License: Restricted - Source Available (All Rights Reserved, No Derivatives)
 
 # Data Layer (Database, Profiles, Defaults, Slash Commands, Master Hub Registration)
 Config.lua
