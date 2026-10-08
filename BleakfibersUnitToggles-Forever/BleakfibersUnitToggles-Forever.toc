@@ -1,0 +1,17 @@
+## Interface: 16001
+## Title: |cff3399ffBleakfiber's|r |cffffffffUnit Toggles|r - |cffffd100Forever|r
+## Notes: Standalone unit nameplate and title CVar manager for World of Warcraft Forever.
+## Author: Bleakfiber
+## Version: 1.0.01
+## SavedVariables: BleakfibersUnitTogglesDB
+## OptionalDeps: BleakfibersAddonConfig-Forever
+
+# Data Layer (Database, Profiles, Defaults, Slash Commands, Master Hub Registration)
+Config.lua
+
+# Core Framework & CVar Engine Synchronization
+Core.lua
+
+# Presentation Layer (Options UI, Standalone Window, Presets)
+UI.lua
+
